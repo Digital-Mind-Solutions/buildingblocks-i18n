@@ -1,0 +1,3 @@
+rootProject.name = 'buildingblocks-i18n'
+
+include 'i18n-core'
