@@ -19,7 +19,7 @@ bootJar {
     enabled = false
 }
 jar {
-    archiveBaseName = "dtobase"
+    archiveBaseName = "i18n-core"
     enabled = true
 }
 
