@@ -1,4 +1,4 @@
-package org.digitalmind.buildingblocks.i18n.core.entity;
+package org.digitalmind.buildingblocks.core.i18n.entity;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import io.swagger.annotations.ApiModel;

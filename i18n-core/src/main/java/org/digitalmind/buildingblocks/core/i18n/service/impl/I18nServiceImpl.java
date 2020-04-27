@@ -1,11 +1,11 @@
-package org.digitalmind.buildingblocks.i18n.core.service.impl;
+package org.digitalmind.buildingblocks.core.i18n.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
-import org.digitalmind.buildingblocks.i18n.core.config.I18nConfig;
-import org.digitalmind.buildingblocks.i18n.core.dto.I18nSearchOperator;
-import org.digitalmind.buildingblocks.i18n.core.entity.I18n;
-import org.digitalmind.buildingblocks.i18n.core.repository.I18nRepository;
-import org.digitalmind.buildingblocks.i18n.core.service.I18nService;
+import org.digitalmind.buildingblocks.core.i18n.config.I18nConfig;
+import org.digitalmind.buildingblocks.core.i18n.dto.I18nSearchOperator;
+import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.repository.I18nRepository;
+import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.CacheEvict;
@@ -17,8 +17,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Locale;
 
-import static org.digitalmind.buildingblocks.i18n.core.config.I18nModuleConfig.CACHE_NAME;
-import static org.digitalmind.buildingblocks.i18n.core.config.I18nModuleConfig.ENABLED;
+import static org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig.CACHE_NAME;
+import static org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig.ENABLED;
 
 @Service
 @ConditionalOnProperty(name = ENABLED, havingValue = "true")

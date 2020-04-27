@@ -1,8 +1,9 @@
-package org.digitalmind.buildingblocks.i18n.core.component;
+package org.digitalmind.buildingblocks.core.i18n.component;
 
 import lombok.extern.slf4j.Slf4j;
-import org.digitalmind.buildingblocks.i18n.core.entity.I18n;
-import org.digitalmind.buildingblocks.i18n.core.service.I18nService;
+import org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig;
+import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.support.AbstractMessageSource;
@@ -11,11 +12,9 @@ import org.springframework.stereotype.Component;
 import java.text.MessageFormat;
 import java.util.Locale;
 
-import static org.digitalmind.buildingblocks.i18n.core.config.I18nModuleConfig.ENABLED;
-
 
 @Component("messageSource")
-@ConditionalOnProperty(name = ENABLED, havingValue = "true")
+@ConditionalOnProperty(name = I18nCoreModuleConfig.ENABLED, havingValue = "true")
 @Slf4j
 public class I18nMessageSource extends AbstractMessageSource {
 

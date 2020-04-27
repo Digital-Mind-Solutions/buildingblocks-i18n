@@ -1,4 +1,4 @@
-package org.digitalmind.buildingblocks.i18n.core.exception;
+package org.digitalmind.buildingblocks.core.i18n.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

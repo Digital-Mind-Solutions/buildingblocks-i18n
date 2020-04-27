@@ -1,4 +1,4 @@
-package org.digitalmind.buildingblocks.i18n.core.config;
+package org.digitalmind.buildingblocks.core.i18n.config;
 
 import com.google.common.base.Predicate;
 import lombok.AllArgsConstructor;
@@ -24,12 +24,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.google.common.base.Predicates.or;
-import static org.digitalmind.buildingblocks.i18n.core.config.I18nModuleConfig.*;
 import static springfox.documentation.builders.PathSelectors.regex;
 
 @Configuration
 @EnableSwagger2
-@ConditionalOnProperty(name = API_ENABLED, havingValue = "true")
+@ConditionalOnProperty(name = I18nCoreModuleConfig.API_ENABLED, havingValue = "true")
 public class I18nSwaggerConfig {
 
     private final ServletContext servletContext;
@@ -83,13 +82,13 @@ public class I18nSwaggerConfig {
         this.servletContext = servletContext;
     }
 
-    @Bean(PREFIX + "ApiSwaggerProperties")
-    @ConfigurationProperties(prefix = PREFIX + ".api")
+    @Bean(I18nCoreModuleConfig.PREFIX + "ApiSwaggerProperties")
+    @ConfigurationProperties(prefix = I18nCoreModuleConfig.PREFIX + ".api")
     public ApiSwaggerProperties apiProperties() {
         return new ApiSwaggerProperties();
     }
 
-    @Bean(PREFIX + "Docket")
+    @Bean(I18nCoreModuleConfig.PREFIX + "Docket")
     public Docket api(
             ApiSwaggerProperties apiSwaggerProperties
     ) {
@@ -108,7 +107,7 @@ public class I18nSwaggerConfig {
                 })
                 .groupName(apiSwaggerProperties.getInfo().getGroupName())
                 .select()
-                .apis(RequestHandlerSelectors.basePackage(API_PACKAGE))
+                .apis(RequestHandlerSelectors.basePackage(I18nCoreModuleConfig.API_PACKAGE))
                 //.paths(regex("/rest.*"))
 
                 //.apis(RequestHandlerSelectors.any())
@@ -138,7 +137,7 @@ public class I18nSwaggerConfig {
         return apiInfo;
     }
 
-    @Bean(PREFIX + "UiConfiguration")
+    @Bean(I18nCoreModuleConfig.PREFIX + "UiConfiguration")
     UiConfiguration uiConfig() {
         return UiConfigurationBuilder.builder()
                 .deepLinking(true)

@@ -1,7 +1,7 @@
-package org.digitalmind.buildingblocks.i18n.core.service;
+package org.digitalmind.buildingblocks.core.i18n.service;
 
-import org.digitalmind.buildingblocks.i18n.core.dto.I18nSearchOperator;
-import org.digitalmind.buildingblocks.i18n.core.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.dto.I18nSearchOperator;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

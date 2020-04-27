@@ -1,6 +1,6 @@
-package org.digitalmind.buildingblocks.i18n.core.repository;
+package org.digitalmind.buildingblocks.core.i18n.repository;
 
-import org.digitalmind.buildingblocks.i18n.core.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

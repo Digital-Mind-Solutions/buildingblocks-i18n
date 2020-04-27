@@ -1,11 +1,12 @@
-package org.digitalmind.buildingblocks.i18n.core.api;
+package org.digitalmind.buildingblocks.core.i18n.api;
 
 
 import io.swagger.annotations.*;
 import lombok.extern.slf4j.Slf4j;
-import org.digitalmind.buildingblocks.i18n.core.dto.I18nSearchOperator;
-import org.digitalmind.buildingblocks.i18n.core.entity.I18n;
-import org.digitalmind.buildingblocks.i18n.core.service.I18nService;
+import org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig;
+import org.digitalmind.buildingblocks.core.i18n.dto.I18nSearchOperator;
+import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.data.domain.Page;
@@ -18,13 +19,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import javax.validation.Valid;
 import java.net.URI;
 
-import static org.digitalmind.buildingblocks.i18n.core.config.I18nModuleConfig.API_ENABLED;
-import static org.digitalmind.buildingblocks.i18n.core.config.I18nModuleConfig.PREFIX;
-
 @Slf4j
 @RestController
-@ConditionalOnProperty(name = API_ENABLED, havingValue = "true")
-@RequestMapping("${" + PREFIX + ".api.docket.base-path}")
+@ConditionalOnProperty(name = I18nCoreModuleConfig.API_ENABLED, havingValue = "true")
+@RequestMapping("${" + I18nCoreModuleConfig.PREFIX + ".api.docket.base-path}")
 @Api(value = "I18n", description = "This resource is exposing the services for internationalization support", tags = {"I18n"})
 public class I18nController {
     private final I18nService i18nService;

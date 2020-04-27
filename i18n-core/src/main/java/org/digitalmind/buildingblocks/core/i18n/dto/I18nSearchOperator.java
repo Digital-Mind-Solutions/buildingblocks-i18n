@@ -1,4 +1,4 @@
-package org.digitalmind.buildingblocks.i18n.core.dto;
+package org.digitalmind.buildingblocks.core.i18n.dto;
 
 public enum I18nSearchOperator {
     EQUALS,
