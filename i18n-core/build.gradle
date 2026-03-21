@@ -1,19 +1,21 @@
 plugins {
     id 'java-library'
-    id 'org.springframework.boot' version '2.1.12.RELEASE'
-    id 'io.spring.dependency-management' version '1.0.7.RELEASE'
+    id 'org.springframework.boot' version '4.0.3'
+    id 'io.spring.dependency-management' version '1.1.7'
     id 'maven-publish'
 }
 
 ext {
-    lombokVersion = '1.18.12'
-    springfoxVersion = '2.9.2'
-    swaggerVersion = '1.6.0'
-    swaggerCodegenVersion = '2.4.0'
+    lombokVersion = '1.18.44'
 }
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.release = 25
 }
 bootJar {
     enabled = false
@@ -27,17 +29,14 @@ dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 
     implementation "org.projectlombok:lombok:${lombokVersion}"
     annotationProcessor "org.projectlombok:lombok:${lombokVersion}"
 
-    implementation "org.digitalmind.buildingblocks.core:jpautils:1.0.0"
+    implementation "org.digitalmind.buildingblocks.core:jpautils:4.0.0"
 
-    implementation "io.springfox:springfox-swagger-ui:${springfoxVersion}"
-    implementation "io.springfox:springfox-swagger2:${springfoxVersion}"
-    implementation "io.swagger:swagger-annotations:${swaggerVersion}"
-    implementation "io.swagger:swagger-models:${swaggerVersion}"
-    implementation "io.swagger:swagger-core:${swaggerVersion}"
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.2'
 }
 
 publishing {

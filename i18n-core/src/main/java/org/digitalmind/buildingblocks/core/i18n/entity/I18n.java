@@ -1,15 +1,14 @@
 package org.digitalmind.buildingblocks.core.i18n.entity;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
-import io.swagger.annotations.ApiModel;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.digitalmind.buildingblocks.core.jpautils.entity.ContextVersionableAuditModel;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import javax.persistence.*;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 
 @SuperBuilder
 @Entity
@@ -29,7 +28,7 @@ import javax.validation.constraints.NotNull;
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 
-@ApiModel(value = "I18n", description = "Entity for providing I8n support.")
+@Schema(description = "Entity for providing I18n support.")
 @JsonPropertyOrder(
         {
                 "id", "locale", "code", "content",
@@ -42,20 +41,20 @@ public class I18n extends ContextVersionableAuditModel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", unique = true, nullable = false)
-    @ApiModelProperty(value = "Unique id of the translation", required = false)
+    @Schema(description = "Unique id of the translation")
     private Long id;
 
-    @ApiModelProperty(value = "The locale info", required = true)
+    @Schema(description = "The locale info", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "locale")
     @NotNull
     private String locale;
 
-    @ApiModelProperty(value = "The translation code", required = true)
+    @Schema(description = "The translation code", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "code")
     @NotNull
     private String code;
 
-    @ApiModelProperty(value = "The translation content", required = true)
+    @Schema(description = "The translation content", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "content")
     @NotNull
     private String content;

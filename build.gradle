@@ -1,8 +1,9 @@
 allprojects {
     group = 'org.digitalmind.buildingblocks.i18n'
-    version = '1.0.0'
+    version = '4.0.0'
 
     repositories {
+        mavenLocal()
         mavenCentral()
         maven {
             name = "digitalmind"

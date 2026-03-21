@@ -1,7 +1,12 @@
 package org.digitalmind.buildingblocks.core.i18n.api;
 
 
-import io.swagger.annotations.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig;
 import org.digitalmind.buildingblocks.core.i18n.dto.I18nSearchOperator;
@@ -16,14 +21,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.validation.Valid;
 import java.net.URI;
 
 @Slf4j
 @RestController
 @ConditionalOnProperty(name = I18nCoreModuleConfig.API_ENABLED, havingValue = "true")
 @RequestMapping("${" + I18nCoreModuleConfig.PREFIX + ".api.docket.base-path}")
-@Api(value = "I18n", description = "This resource is exposing the services for internationalization support", tags = {"I18n"})
+@Tag(name = "I18n", description = "This resource is exposing the services for internationalization support")
 public class I18nController {
     private final I18nService i18nService;
 
@@ -33,22 +37,18 @@ public class I18nController {
     }
 
     //CREATE I18n
-    @ApiOperation(
-            value = "Create translation",
-            notes = "This API is used for creating a new translation entry.",
-            response = I18n.class
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 201, message = "Operation success"),
-            @ApiResponse(code = 400, message = "Bad request"),
-            @ApiResponse(code = 409, message = "Conflict"),
-            @ApiResponse(code = 401, message = "Unauthorized"),
-            @ApiResponse(code = 500, message = "Error encountered when processing request")
+    @Operation(summary = "Create translation", description = "This API is used for creating a new translation entry.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Operation success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
+            @ApiResponse(responseCode = "409", description = "Conflict"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "500", description = "Error encountered when processing request")
     })
     @PostMapping(path = "/", consumes = {MediaType.APPLICATION_JSON_VALUE}, produces = {MediaType.APPLICATION_JSON_VALUE})
     @ResponseBody
     public ResponseEntity<I18n> createI18n(
-            @ApiParam(name = "i18n", value = "The translation", required = true, allowMultiple = false) @Valid @RequestBody I18n i18n) {
+            @Parameter(description = "The translation", required = true) @Valid @RequestBody I18n i18n) {
 
         I18n result = i18nService.save(i18n);
 
@@ -57,63 +57,50 @@ public class I18nController {
     }
 
     //GET I18n
-    @ApiOperation(
-            value = "Retrieve translation",
-            notes = "This API is used for retrieving translation.",
-            response = I18n.class
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Request executed with success"),
-            @ApiResponse(code = 401, message = "Request not authorized"),
-            @ApiResponse(code = 500, message = "Error encountered when executing request")
+    @Operation(summary = "Retrieve translation", description = "This API is used for retrieving translation.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Request executed with success"),
+            @ApiResponse(responseCode = "401", description = "Request not authorized"),
+            @ApiResponse(responseCode = "500", description = "Error encountered when executing request")
     })
     @GetMapping(path = "/{identifier}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<I18n> retrieveI18n(
-            @ApiParam(name = "identifier", value = "The identifier used to identify a I18n.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
+            @Parameter(description = "The identifier used to identify a I18n.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
     ) {
         I18n i18n = i18nService.getOne(identifier);
         return ResponseEntity.ok(i18n);
     }
 
     //LIST I18n
-    @ApiOperation(
-            value = "Retrieve translation list",
-            notes = "This API is used for retrieving translation lists.",
-            response = Page.class
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Request executed with success"),
-            @ApiResponse(code = 401, message = "Request not authorized"),
-            @ApiResponse(code = 500, message = "Error encountered when executing request")
+    @Operation(summary = "Retrieve translation list", description = "This API is used for retrieving translation lists.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Request executed with success"),
+            @ApiResponse(responseCode = "401", description = "Request not authorized"),
+            @ApiResponse(responseCode = "500", description = "Error encountered when executing request")
     })
     @GetMapping(path = "/", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Page<I18n>> listI18n(
-            @ApiParam(name = "code", value = "The code", required = true, allowMultiple = false) @Valid @RequestParam String code,
-            @ApiParam(name = "operator", value = "The operator", required = true, allowMultiple = false, allowableValues = "EQUALS,CONTAINS,START_WITH") @Valid @RequestParam I18nSearchOperator operator,
-            @ApiParam(name = "locale", value = "The locale", required = true, allowMultiple = false) @Valid @RequestParam String locale,
-            @ApiParam(name = "pageable", value = "Pageable parameters.", required = false) Pageable pageable
+            @Parameter(description = "The code", required = true) @Valid @RequestParam String code,
+            @Parameter(description = "The operator", required = true) @Valid @RequestParam I18nSearchOperator operator,
+            @Parameter(description = "The locale", required = true) @Valid @RequestParam String locale,
+            @Parameter(description = "Pageable parameters.") Pageable pageable
     ) {
         Page<I18n> result = i18nService.findByCodeAndLocale(code, operator, locale, pageable);
         return ResponseEntity.ok(result);
     }
 
     //UPDATE BY ID
-    @ApiOperation(
-            value = "Update translation info",
-            notes = "This API is used for updating a translation.",
-            response = Void.class
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Request executed with success"),
-            @ApiResponse(code = 401, message = "Request not authorized"),
-            @ApiResponse(code = 404, message = "Process does not exists"),
-            @ApiResponse(code = 500, message = "Error encountered when executing request")
+    @Operation(summary = "Update translation info", description = "This API is used for updating a translation.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Request executed with success"),
+            @ApiResponse(responseCode = "401", description = "Request not authorized"),
+            @ApiResponse(responseCode = "404", description = "Process does not exists"),
+            @ApiResponse(responseCode = "500", description = "Error encountered when executing request")
     })
-
     @PutMapping(path = "/{identifier}", produces = {MediaType.APPLICATION_JSON_VALUE})
     public ResponseEntity<Void> updateI18n(
-            @ApiParam(name = "identifier", value = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier,
-            @ApiParam(name = "18n", value = "The translation details", required = true) @Valid @RequestBody I18n i18n
+            @Parameter(description = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier,
+            @Parameter(description = "The translation details", required = true) @Valid @RequestBody I18n i18n
     ) {
         I18n result = i18nService.getOne(identifier);
         result.setLocale(i18n.getLocale());
@@ -124,21 +111,16 @@ public class I18nController {
     }
 
     //DELETE BY ID
-    @ApiOperation(
-            value = "Delete translation info",
-            notes = "This API is used for deleting a translation.",
-            response = Void.class
-    )
-    @ApiResponses(value = {
-            @ApiResponse(code = 200, message = "Request executed with success"),
-            @ApiResponse(code = 401, message = "Request not authorized"),
-            @ApiResponse(code = 404, message = "Process does not exists"),
-            @ApiResponse(code = 500, message = "Error encountered when executing request")
+    @Operation(summary = "Delete translation info", description = "This API is used for deleting a translation.")
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Request executed with success"),
+            @ApiResponse(responseCode = "401", description = "Request not authorized"),
+            @ApiResponse(responseCode = "404", description = "Process does not exists"),
+            @ApiResponse(responseCode = "500", description = "Error encountered when executing request")
     })
-
     @DeleteMapping(path = "/{identifier}")
     public ResponseEntity<Void> deleteI18n(
-            @ApiParam(name = "identifier", value = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
+            @Parameter(description = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
     ) {
         I18n i18n = i18nService.getOne(identifier);
         i18nService.deleteById(identifier);
