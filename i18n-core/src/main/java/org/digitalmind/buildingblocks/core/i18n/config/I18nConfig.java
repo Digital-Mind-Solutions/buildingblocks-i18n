@@ -16,6 +16,21 @@ import org.springframework.context.annotation.Configuration;
 public class I18nConfig {
     private boolean enabled;
     private String defaultLocale;
-    //private DynamicCacheDefinition.DynamicCacheProperties cache;
+    /** REST admin API — off by default; set {@code api.enabled=true} to expose. */
+    private ApiProperties api = new ApiProperties();
+    private MessageSourceProperties messageSource = new MessageSourceProperties();
+
+    @Getter
+    @Setter
+    public static class ApiProperties {
+        private boolean enabled = false;
+    }
+
+    @Getter
+    @Setter
+    public static class MessageSourceProperties {
+        /** When true, registers bean {@code i18nMessageSource}. Host wires it explicitly. */
+        private boolean enabled = false;
+    }
 
 }

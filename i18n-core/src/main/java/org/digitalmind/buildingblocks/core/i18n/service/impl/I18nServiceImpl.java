@@ -2,23 +2,25 @@ package org.digitalmind.buildingblocks.core.i18n.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
 import org.digitalmind.buildingblocks.core.i18n.config.I18nConfig;
-import org.digitalmind.buildingblocks.core.i18n.dto.I18nSearchOperator;
 import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.exception.I18nNotFoundException;
 import org.digitalmind.buildingblocks.core.i18n.repository.I18nRepository;
 import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
+import org.digitalmind.buildingblocks.core.i18n.util.I18nLocaleUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Locale;
 
 import static org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig.CACHE_NAME;
 import static org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig.ENABLED;
+import static org.digitalmind.buildingblocks.core.i18n.entity.I18n.DEFAULT_NAMESPACE;
 
 @Service
 @ConditionalOnProperty(name = ENABLED, havingValue = "true")
@@ -28,123 +30,103 @@ public class I18nServiceImpl implements I18nService {
 
     private final I18nConfig i18nConfig;
     private final I18nRepository i18nRepository;
-    //private final DynamicCacheResolver cacheResolver;
+    /** Proxy so overload delegates hit {@code @Cacheable} on the List-based translate. */
+    private final I18nService self;
 
     @Autowired
     public I18nServiceImpl(
             I18nConfig i18nConfig,
-            I18nRepository i18nRepository
-            //,
-            //@Qualifier(DYNAMIC_CACHE_RESOLVER) DynamicCacheResolver cacheResolver
+            I18nRepository i18nRepository,
+            @Lazy I18nService self
     ) {
-
         this.i18nConfig = i18nConfig;
         this.i18nRepository = i18nRepository;
-        //this.cacheResolver = cacheResolver;
-
-        //        try {
-        //            this.cacheResolver.registerCacheDefinition(
-        //                    DynamicCacheDefinition.builder()
-        //                            .method(I18nServiceImpl.class.getMethod("translate", new Class[]{String.class, String.class}))
-        //                            .operation((new CacheableOperation.Builder()).build())
-        //                            .cach(
-        //                                    DynamicCacheDefinition.DynamicCacheProperties.builder()
-        //                                            .cacheManager(i18nConfig.getCache().getCacheManager())
-        //                                            .cacheNames(i18nConfig.getCache().getCacheNames())
-        //                                            .build()
-        //                            )
-        //                            .build()
-        //            );
-        //            this.cacheResolver.registerCacheDefinition(
-        //                    DynamicCacheDefinition.builder()
-        //                            .method(I18nServiceImpl.class.getMethod("clearCache", new Class[]{}))
-        //                            .operation((new CacheEvictOperation.Builder()).build())
-        //                            .cach(
-        //                                    DynamicCacheDefinition.DynamicCacheProperties.builder()
-        //                                            .cacheManager(i18nConfig.getCache().getCacheManager())
-        //                                            .cacheNames(i18nConfig.getCache().getCacheNames())
-        //                                            .build()
-        //                            )
-        //                            .build()
-        //            );
-        //        } catch (NoSuchMethodException e) {
-        //            throw new I18nInitializeException(e);
-        //        }
+        this.self = self;
     }
 
     @Override
     public I18n getOne(Long id) {
-        return i18nRepository.getOne(id);
+        return i18nRepository.findById(id)
+                .orElseThrow(() -> new I18nNotFoundException("I18n not found for id=" + id));
     }
 
     @Override
-    public I18n findByCodeAndLocale(String code, String locale) {
-        return i18nRepository.findByCodeAndLocale(code, locale);
+    public I18n findByNamespaceAndCodeAndLocale(String namespace, String code, String locale) {
+        return i18nRepository.findByNamespaceAndCodeAndLocale(
+                namespace, code, I18nLocaleUtil.normalize(locale));
     }
 
     @Override
-    public Page<I18n> findByCodeAndLocale(String code, I18nSearchOperator operator, String locale, Pageable pageable) {
-        switch (operator) {
-            case CONTAINS:
-                return this.i18nRepository.findByCodeContainingAndLocaleStartingWith(code, locale, pageable);
-
-            case START_WITH:
-                return this.i18nRepository.findByCodeStartingWithAndLocaleStartingWith(code, locale, pageable);
-
-            case EQUALS:
-                return this.i18nRepository.findByCodeAndLocaleStartingWith(code, locale, pageable);
-        }
-        return null;
-    }
-
-    @Override
+    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
     public void deleteById(Long id) {
         i18nRepository.deleteById(id);
     }
 
     @Override
-    public long deleteByCodeAndLocale(String code, String locale) {
-        return i18nRepository.deleteByCodeAndLocale(code, locale);
+    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
+    public long deleteByNamespaceAndCodeAndLocale(String namespace, String code, String locale) {
+        return i18nRepository.deleteByNamespaceAndCodeAndLocale(
+                namespace, code, I18nLocaleUtil.normalize(locale));
     }
 
     @Override
+    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
     public I18n save(I18n i18n) {
+        if (i18n.getLocale() != null) {
+            i18n.setLocale(I18nLocaleUtil.normalize(i18n.getLocale()));
+        }
+        if (i18n.getNamespace() == null || i18n.getNamespace().isBlank()) {
+            i18n.setNamespace(DEFAULT_NAMESPACE);
+        }
         return i18nRepository.save(i18n);
     }
 
+    private I18n missingTranslation(String namespace, String code, List<String> locales) {
+        String locale = (locales == null || locales.isEmpty()) ? null : locales.get(0);
+        return I18n.builder()
+                .id(0L)
+                .namespace(namespace != null ? namespace : DEFAULT_NAMESPACE)
+                .code(code)
+                .content(code)
+                .locale(locale)
+                .build();
+    }
 
-    private I18n defaultLocale(I18n i18n, String key, String locale) {
+    @Override
+    @Cacheable(cacheNames = CACHE_NAME, unless = "#result == null || #result.id == null || #result.id == 0")
+    public I18n translate(String namespace, String code, List<String> locales) {
+        String resolvedNamespace = (namespace == null || namespace.isBlank()) ? DEFAULT_NAMESPACE : namespace;
+        List<String> orderedLocales = I18nLocaleUtil.normalizeOrdered(locales);
+        if (orderedLocales.isEmpty()) {
+            String fallback = I18nLocaleUtil.normalize(i18nConfig.getDefaultLocale());
+            orderedLocales = fallback == null ? List.of() : List.of(fallback);
+        }
+        I18n i18n = i18nRepository.findFirstByNamespaceAndCodeAndLocales(
+                resolvedNamespace, code, orderedLocales);
         if (i18n == null) {
-            return I18n.builder().id(0L).code(key).content(key).locale(locale).build();
+            return missingTranslation(resolvedNamespace, code, orderedLocales);
         }
         return i18n;
     }
 
     @Override
-    //@Cacheable(cacheResolver = DYNAMIC_CACHE_RESOLVER)
-    @Cacheable(cacheNames = CACHE_NAME)
-    public I18n translate(String key, Locale locale) {
-        String localeString = locale.toString();
-        I18n i18n = i18nRepository.findByCodeAndLocale(key, localeString);
-        if (i18n == null) {
-            localeString = locale.getLanguage();
-            i18n = i18nRepository.findByCodeAndLocale(key, localeString);
-        }
-        return defaultLocale(i18n, key, localeString);
+    public I18n translate(String namespace, String code, Locale locale) {
+        return self.translate(namespace, code, I18nLocaleUtil.preferenceList(locale, i18nConfig.getDefaultLocale()));
     }
 
     @Override
-    //@Cacheable(cacheResolver = DYNAMIC_CACHE_RESOLVER)
-    @Cacheable(cacheNames = CACHE_NAME)
-    public I18n translate(String key, String locale) {
-        I18n i18n = i18nRepository.findByCodeAndLocale(key, locale);
-        if (i18n == null) {
-            i18n = i18nRepository.findByCodeAndLocale(key, i18nConfig.getDefaultLocale());
-        }
-        return defaultLocale(i18n, key, locale);
+    public I18n translate(String code, Locale locale) {
+        return self.translate(DEFAULT_NAMESPACE, code,
+                I18nLocaleUtil.preferenceList(locale, i18nConfig.getDefaultLocale()));
     }
 
-    //@CacheEvict(cacheResolver = DYNAMIC_CACHE_RESOLVER, allEntries = true)
+    @Override
+    public I18n translate(String code, String locale) {
+        return self.translate(DEFAULT_NAMESPACE, code, I18nLocaleUtil.normalizeOrdered(
+                List.of(locale, i18nConfig.getDefaultLocale())));
+    }
+
+    @Override
     @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
     public void clearCache() {
     }

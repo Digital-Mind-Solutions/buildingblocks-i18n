@@ -9,23 +9,23 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig;
-import org.digitalmind.buildingblocks.core.i18n.dto.I18nSearchOperator;
 import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
 import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.List;
 
 @Slf4j
 @RestController
-@ConditionalOnProperty(name = I18nCoreModuleConfig.API_ENABLED, havingValue = "true")
+@ConditionalOnBean(I18nService.class)
+@ConditionalOnProperty(name = I18nCoreModuleConfig.API_ENABLED, havingValue = "true", matchIfMissing = false)
 @RequestMapping("${" + I18nCoreModuleConfig.PREFIX + ".api.docket.base-path}")
 @Tag(name = "I18n", description = "This resource is exposing the services for internationalization support")
 public class I18nController {
@@ -71,22 +71,20 @@ public class I18nController {
         return ResponseEntity.ok(i18n);
     }
 
-    //LIST I18n
-    @Operation(summary = "Retrieve translation list", description = "This API is used for retrieving translation lists.")
+    //RESOLVE I18n (ordered locale preference)
+    @Operation(summary = "Resolve translation", description = "Resolves a translation by namespace, code and ordered locale preference list (first match wins).")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Request executed with success"),
             @ApiResponse(responseCode = "401", description = "Request not authorized"),
             @ApiResponse(responseCode = "500", description = "Error encountered when executing request")
     })
     @GetMapping(path = "/", produces = {MediaType.APPLICATION_JSON_VALUE})
-    public ResponseEntity<Page<I18n>> listI18n(
+    public ResponseEntity<I18n> resolveI18n(
+            @Parameter(description = "The namespace", required = true) @Valid @RequestParam String namespace,
             @Parameter(description = "The code", required = true) @Valid @RequestParam String code,
-            @Parameter(description = "The operator", required = true) @Valid @RequestParam I18nSearchOperator operator,
-            @Parameter(description = "The locale", required = true) @Valid @RequestParam String locale,
-            @Parameter(description = "Pageable parameters.") Pageable pageable
+            @Parameter(description = "Ordered locale preference list", required = true) @Valid @RequestParam List<String> locales
     ) {
-        Page<I18n> result = i18nService.findByCodeAndLocale(code, operator, locale, pageable);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(i18nService.translate(namespace, code, locales));
     }
 
     //UPDATE BY ID
@@ -103,6 +101,7 @@ public class I18nController {
             @Parameter(description = "The translation details", required = true) @Valid @RequestBody I18n i18n
     ) {
         I18n result = i18nService.getOne(identifier);
+        result.setNamespace(i18n.getNamespace());
         result.setLocale(i18n.getLocale());
         result.setContent(i18n.getContent());
         result.setCode(i18n.getCode());

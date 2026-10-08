@@ -9,14 +9,17 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
 import org.springdoc.core.models.GroupedOpenApi;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@ConditionalOnProperty(name = I18nCoreModuleConfig.API_ENABLED, havingValue = "true")
+@ConditionalOnBean(I18nService.class)
+@ConditionalOnProperty(name = I18nCoreModuleConfig.API_ENABLED, havingValue = "true", matchIfMissing = false)
 public class I18nOpenApiConfig {
 
     @Data

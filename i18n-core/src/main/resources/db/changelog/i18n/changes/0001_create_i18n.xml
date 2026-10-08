@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+            http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.3.xsd">
+
+    <changeSet id="i18n-0001-create-i18n" author="buildingblocks-i18n">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="i18n"/>
+            </not>
+        </preConditions>
+
+        <createTable tableName="i18n">
+            <column name="id" type="bigint" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="namespace" type="varchar(128)" defaultValue="default">
+                <constraints nullable="false"/>
+            </column>
+            <column name="code" type="varchar(256)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="locale" type="varchar(32)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="content" type="LONGTEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="context_id" type="varchar(50)"/>
+            <column name="version" type="bigint">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="varchar(100)"/>
+            <column name="updated_at" type="timestamp"/>
+            <column name="updated_by" type="varchar(100)"/>
+        </createTable>
+
+        <addUniqueConstraint
+                tableName="i18n"
+                constraintName="i18n_ux1"
+                columnNames="namespace, code, locale"/>
+
+        <createIndex tableName="i18n" indexName="i18n_ix1">
+            <column name="namespace"/>
+            <column name="locale"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
