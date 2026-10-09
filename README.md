@@ -87,5 +87,7 @@ Host migration playbook: [`ai/skills/i18n-host-migration/README.md`](ai/skills/i
 
 | Version | Branch | Notes | Full README |
 |---------|--------|-------|-------------|
-| **4.1.0** | `spring-4.1.0` | Current line; same contract as 4.0.0 updated | [`releases/README-4.1.0.md`](releases/README-4.1.0.md) |
-| **4.0.0** | `spring-4.0.0` | Prior Spring Boot 4 line | [`releases/README-4.0.0.md`](releases/README-4.0.0.md) |
+| **4.1.0** | `spring-4.1.0` | Current line: `(namespace, code, locale)`, ordered-locale resolve, bean `i18nMessageSource` | [`releases/README-4.1.0.md`](releases/README-4.1.0.md) |
+| **4.0.0** | `spring-4.0.0` | Prior line (esign-evo): `(code, locale)`, bean `messageSource` | [`releases/README-4.0.0.md`](releases/README-4.0.0.md) |
+
+**4.1.0 vs 4.0.0:** different data key and APIs — see [Differences from 4.0.0](releases/README-4.1.0.md#differences-from-400) in the 4.1.0 contract.

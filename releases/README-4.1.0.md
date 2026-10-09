@@ -8,10 +8,28 @@ Library for **DB-backed internationalization**: store `(namespace, code, locale)
 | Module | `i18n-core` |
 | Branch | `spring-4.1.0` |
 | Version | `4.1.0` |
-| Basis | same contract / content as **4.0.0 updated**, separate release line |
+| Stack | Spring Boot **4.0.3** (library plugins) |
+| Licence | **DMSAL v1.0** — [`../LICENSE`](../LICENSE) |
 | Doc | [`releases/README-4.1.0.md`](README-4.1.0.md) |
+| Prior line | [`README-4.0.0.md`](README-4.0.0.md) — `(code, locale)` / esign-evo (different contract) |
 
 This document is the **full contract** for version **4.1.0**. Overview / index: [`../README.md`](../README.md). The consumer owns Liquibase execution and the `CacheManager`.
+
+## Differences from 4.0.0
+
+`4.0.0` on `spring-4.0.0` (esign-evo) is a **different** contract. Do not treat 4.1.0 as a drop-in rename of that line.
+
+| | **4.0.0** (`spring-4.0.0`) | **4.1.0** (`spring-4.1.0`) |
+|--|---------------------------|----------------------------|
+| Logical key | `(code, locale)` | `(namespace, code, locale)` |
+| Locale resolve | Exact / fallback as in 4.0.0 service | Ordered preference list in **one** SQL (`List<?>` / `preferenceList`) |
+| Locale form | As documented for 4.0.0 | Canonical lowercase, `_` → `-` |
+| MessageSource bean | **`messageSource`** (when module enabled) | Opt-in **`i18nMessageSource`** (`message-source.enabled`, not `@Primary`) |
+| REST | Opt-in admin / search | Opt-in admin / resolve with ordered `locales` |
+| Schema ownership | Consumer (see 4.0.0 doc) | Consumer runs Liquibase; jar ships `db/changelog/i18n/` |
+| Agent / migration docs | Not on that line | [`../ai/`](../ai/) + host-migration skill |
+
+Full prior-line contract: [`README-4.0.0.md`](README-4.0.0.md).
 
 ## Purpose
 
