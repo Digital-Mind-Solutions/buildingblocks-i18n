@@ -1,4 +1,4 @@
-# buildingblocks-i18n
+# buildingblocks-i18n (4.1.0)
 
 Library for **DB-backed internationalization**: store `(namespace, code, locale) → content`, resolve with an ordered locale preference list in **one query**, optionally expose Spring `MessageSource` and a REST admin API.
 
@@ -6,7 +6,9 @@ Library for **DB-backed internationalization**: store `(namespace, code, locale)
 |--|--|
 | Artifact | `org.digitalmind.buildingblocks.i18n:i18n-core` |
 | Module | `i18n-core` |
-| Version | root Gradle `version` (currently `4.0.0`) |
+| Branch | `spring-4.1.0` |
+| Version | root Gradle `version` (currently `4.1.0`) |
+| Basis | same contract / content as **4.0.0 updated**, kept as a separate release line |
 
 This document is a **reusable contract** for any consuming application. The consumer owns Liquibase execution and the `CacheManager`.
 
