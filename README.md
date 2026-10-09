@@ -8,8 +8,15 @@ DB-backed internationalization: `(namespace, code, locale) → content`, ordered
 | Module | `i18n-core` |
 | Current line | **4.1.0** (`spring-4.1.0`) |
 | Full contracts | [`releases/`](releases/) |
+| Licence | **DMSAL v1.0** (source-available; inspection only unless Articles 5, 6, or 9) — [`LICENSE`](LICENSE) |
 
 Consumer owns Liquibase execution and the `CacheManager`. Agent notes: [`ai/README.md`](ai/README.md).
+
+## Licence
+
+Licensed under the **Digital Mind Source-Available License (DMSAL) v1.0**. Public Source Code is for inspection only; Use requires Articles 5, 6, or 9 of the licence.
+
+Full text: [`LICENSE`](LICENSE).
 
 ## Overview
 
