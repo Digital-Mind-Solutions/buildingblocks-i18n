@@ -47,6 +47,57 @@ public final class I18nLocaleUtil {
     }
 
     /**
+     * Same as {@link #normalizeOrdered(List)} for {@link Locale} values.
+     */
+    public static List<String> normalizeOrderedLocales(List<Locale> locales) {
+        if (locales == null || locales.isEmpty()) {
+            return List.of();
+        }
+        LinkedHashSet<String> ordered = new LinkedHashSet<>();
+        for (Locale locale : locales) {
+            String normalized = normalize(locale);
+            if (normalized != null) {
+                ordered.add(normalized);
+            }
+        }
+        return new ArrayList<>(ordered);
+    }
+
+    /**
+     * Converts mixed locale tokens to canonical strings (order preserved, de-duplicated).
+     * Allowed elements: {@code null} (skipped), {@link String}, {@link CharSequence}, {@link Locale}.
+     *
+     * @throws IllegalArgumentException if an element has an unsupported type
+     */
+    public static List<String> normalizeOrderedObjects(List<?> locales) {
+        if (locales == null || locales.isEmpty()) {
+            return List.of();
+        }
+        LinkedHashSet<String> ordered = new LinkedHashSet<>();
+        for (Object locale : locales) {
+            if (locale == null) {
+                continue;
+            }
+            String normalized;
+            if (locale instanceof Locale) {
+                normalized = normalize((Locale) locale);
+            } else if (locale instanceof String) {
+                normalized = normalize((String) locale);
+            } else if (locale instanceof CharSequence) {
+                normalized = normalize(locale.toString());
+            } else {
+                throw new IllegalArgumentException(
+                        "Unsupported locale token type: " + locale.getClass().getName()
+                                + " (allowed: String, CharSequence, Locale)");
+            }
+            if (normalized != null) {
+                ordered.add(normalized);
+            }
+        }
+        return new ArrayList<>(ordered);
+    }
+
+    /**
      * Preference chain: full tag → language → optional defaultLocale.
      */
     public static List<String> preferenceList(Locale locale, String defaultLocale) {

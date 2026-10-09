@@ -7,13 +7,15 @@ import java.util.Locale;
 
 public interface I18nService {
 
-    I18n translate(String namespace, String code, List<String> locales);
+    I18n translate(String namespace, String code, List<?> locales);
+
+    I18n translate(String namespace, String code, String locale);
 
     I18n translate(String namespace, String code, Locale locale);
 
-    I18n translate(String code, Locale locale);
-
     I18n translate(String code, String locale);
+
+    I18n translate(String code, Locale locale);
 
     void clearCache();
 
@@ -21,7 +23,11 @@ public interface I18nService {
 
     I18n findByNamespaceAndCodeAndLocale(String namespace, String code, String locale);
 
+    I18n findByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale);
+
     long deleteByNamespaceAndCodeAndLocale(String namespace, String code, String locale);
+
+    long deleteByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale);
 
     void deleteById(Long id);
 

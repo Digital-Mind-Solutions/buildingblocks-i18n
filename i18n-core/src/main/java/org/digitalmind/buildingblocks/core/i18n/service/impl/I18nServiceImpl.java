@@ -30,14 +30,16 @@ public class I18nServiceImpl implements I18nService {
 
     private final I18nConfig i18nConfig;
     private final I18nRepository i18nRepository;
-    /** Proxy so overload delegates hit {@code @Cacheable} on the List-based translate. */
-    private final I18nService self;
+    /**
+     * Concrete proxy so {@link #translateForStringLocales} stays off the interface but still hits cache.
+     */
+    private final I18nServiceImpl self;
 
     @Autowired
     public I18nServiceImpl(
             I18nConfig i18nConfig,
             I18nRepository i18nRepository,
-            @Lazy I18nService self
+            @Lazy I18nServiceImpl self
     ) {
         this.i18nConfig = i18nConfig;
         this.i18nRepository = i18nRepository;
@@ -53,7 +55,15 @@ public class I18nServiceImpl implements I18nService {
     @Override
     public I18n findByNamespaceAndCodeAndLocale(String namespace, String code, String locale) {
         return i18nRepository.findByNamespaceAndCodeAndLocale(
-                namespace, code, I18nLocaleUtil.normalize(locale));
+                namespace, code, I18nLocaleUtil.normalize(locale)
+        );
+    }
+
+    @Override
+    public I18n findByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale) {
+        return findByNamespaceAndCodeAndLocale(
+                namespace, code, I18nLocaleUtil.normalize(locale)
+        );
     }
 
     @Override
@@ -66,7 +76,16 @@ public class I18nServiceImpl implements I18nService {
     @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
     public long deleteByNamespaceAndCodeAndLocale(String namespace, String code, String locale) {
         return i18nRepository.deleteByNamespaceAndCodeAndLocale(
-                namespace, code, I18nLocaleUtil.normalize(locale));
+                namespace, code, I18nLocaleUtil.normalize(locale)
+        );
+    }
+
+    @Override
+    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
+    public long deleteByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale) {
+        return deleteByNamespaceAndCodeAndLocale(
+                namespace, code, I18nLocaleUtil.normalize(locale)
+        );
     }
 
     @Override
@@ -92,9 +111,11 @@ public class I18nServiceImpl implements I18nService {
                 .build();
     }
 
-    @Override
+    /**
+     * Cached string-locale lookup — implementation detail (not on {@link I18nService}).
+     */
     @Cacheable(cacheNames = CACHE_NAME, unless = "#result == null || #result.id == null || #result.id == 0")
-    public I18n translate(String namespace, String code, List<String> locales) {
+    public I18n translateForStringLocales(String namespace, String code, List<String> locales) {
         String resolvedNamespace = (namespace == null || namespace.isBlank()) ? DEFAULT_NAMESPACE : namespace;
         List<String> orderedLocales = I18nLocaleUtil.normalizeOrdered(locales);
         if (orderedLocales.isEmpty()) {
@@ -102,7 +123,8 @@ public class I18nServiceImpl implements I18nService {
             orderedLocales = fallback == null ? List.of() : List.of(fallback);
         }
         I18n i18n = i18nRepository.findFirstByNamespaceAndCodeAndLocales(
-                resolvedNamespace, code, orderedLocales);
+                resolvedNamespace, code, orderedLocales
+        );
         if (i18n == null) {
             return missingTranslation(resolvedNamespace, code, orderedLocales);
         }
@@ -110,20 +132,36 @@ public class I18nServiceImpl implements I18nService {
     }
 
     @Override
+    public I18n translate(String namespace, String code, List<?> locales) {
+        return self.translateForStringLocales(
+                namespace, code, I18nLocaleUtil.normalizeOrderedObjects(locales)
+        );
+    }
+
+    @Override
     public I18n translate(String namespace, String code, Locale locale) {
-        return self.translate(namespace, code, I18nLocaleUtil.preferenceList(locale, i18nConfig.getDefaultLocale()));
+        return self.translateForStringLocales(
+                namespace, code, I18nLocaleUtil.preferenceList(locale, i18nConfig.getDefaultLocale())
+        );
+    }
+
+    @Override
+    public I18n translate(String namespace, String code, String locale) {
+        return self.translateForStringLocales(namespace, code, I18nLocaleUtil.normalizeOrdered(
+                List.of(locale, i18nConfig.getDefaultLocale()))
+        );
     }
 
     @Override
     public I18n translate(String code, Locale locale) {
-        return self.translate(DEFAULT_NAMESPACE, code,
-                I18nLocaleUtil.preferenceList(locale, i18nConfig.getDefaultLocale()));
+        return self.translateForStringLocales(DEFAULT_NAMESPACE, code,
+                I18nLocaleUtil.preferenceList(locale, i18nConfig.getDefaultLocale())
+        );
     }
 
     @Override
     public I18n translate(String code, String locale) {
-        return self.translate(DEFAULT_NAMESPACE, code, I18nLocaleUtil.normalizeOrdered(
-                List.of(locale, i18nConfig.getDefaultLocale())));
+        return translate(DEFAULT_NAMESPACE, code, locale);
     }
 
     @Override

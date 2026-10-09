@@ -76,7 +76,15 @@ Do not rename the library bean to `messageSource` inside the module.
 | `content` | Plain display text (e.g. `don't`). Intentional args: `{0}`. Do not store `don''t`. |
 
 ```java
-i18nService.translate("default", "greeting.welcome", List.of("ro-ro", "ro", "en"));
+// List<String> accepted by translate(..., List<?>)
+I18n row = i18nService.translate("default", "greeting.welcome", List.of("ro-ro", "ro", "en"));
+String text = row.getContent();
+if (row.getId() == null || row.getId() == 0L) {
+    // miss — content equals code; apply your fallback policy
+}
+
+// or single locale
+i18nService.translate("default", "greeting.welcome", Locale.forLanguageTag("ro-RO"));
 ```
 
 MessageSource key: `default:greeting.welcome`.
@@ -84,15 +92,17 @@ MessageSource key: `default:greeting.welcome`.
 ### 8. Verify
 
 - [ ] Table has `namespace` + unique `(namespace, code, locale)`
-- [ ] `translate` returns first matching locale from the list
+- [ ] `translate` with ordered list returns first matching locale
+- [ ] `List<String>` and `List<Locale>` both compile against `List<?>`
 - [ ] Optional: second translate hits cache
+- [ ] Miss path: `id == 0` (do not treat miss `content` as a real template/message body without checking)
 - [ ] If MessageSource on: `don't` and `{TEST}` / `{0}` render correctly
 - [ ] REST API off unless intentionally enabled
-- [ ] Optional: `./gradlew :i18n-core:test` on the library (no DB)
+- [ ] Optional: `./gradlew :i18n-core:test --tests "org.digitalmind.buildingblocks.core.i18n.util.*"`
 
 ## Do not
 
 - Fork module Liquibase into the consumer tree; include from the jar classpath.
-- Implement locale fallback with multiple finds; use one ordered list.
+- Implement locale fallback with multiple finds; use one ordered list (`List<?>` or single-locale overloads).
 - Assume REST API is required for runtime translate.
 - Store MessageFormat-escaped `content` for dual-path (service + MessageSource) use.

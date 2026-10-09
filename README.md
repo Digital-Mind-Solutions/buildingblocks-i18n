@@ -1,6 +1,6 @@
 # buildingblocks-i18n
 
-Library for **DB-backed internationalization**: store `(namespace, code, locale) → content`, resolve with an ordered locale list in **one query**, optionally expose Spring `MessageSource` and a REST admin API.
+Library for **DB-backed internationalization**: store `(namespace, code, locale) → content`, resolve with an ordered locale preference list in **one query**, optionally expose Spring `MessageSource` and a REST admin API.
 
 | | |
 |--|--|
@@ -8,7 +8,7 @@ Library for **DB-backed internationalization**: store `(namespace, code, locale)
 | Module | `i18n-core` |
 | Version | root Gradle `version` (currently `4.0.0`) |
 
-This document is a **reusable contract** for any consuming application. It does not assume a specific product, DB name, or changelog tree beyond: the consumer owns Liquibase and the `CacheManager`.
+This document is a **reusable contract** for any consuming application. The consumer owns Liquibase execution and the `CacheManager`.
 
 ## Purpose
 
@@ -39,7 +39,7 @@ Agent-oriented notes: [`ai/README.md`](ai/README.md).
 |----------------|------|
 | `...i18n.entity` | JPA `I18n` |
 | `...i18n.repository` | JPA + custom ordered-locale query (`EntityManager` ctor injection) |
-| `...i18n.service` | `I18nService` / impl (cache, normalize, miss handling) |
+| `...i18n.service` | `I18nService` / `I18nServiceImpl` (cache, normalize, miss) |
 | `...i18n.component` | `i18nMessageSource` (opt-in) |
 | `...i18n.api` | REST (opt-in) |
 | `...i18n.util` | `I18nLocaleUtil`, `I18nMessageFormatUtil`, `I18nBraceMatcher` |
@@ -63,7 +63,7 @@ Table `i18n`:
 
 ## Liquibase (consumer runs it)
 
-**Principle:** the jar ships changelogs; the **consumer** owns DataSource, master changelog, and execution. This library does not open a migration JDBC connection.
+**Principle:** the jar ships changelogs; the **consumer** owns DataSource, master changelog, and execution.
 
 ### Resource
 
@@ -89,13 +89,11 @@ XML:
 <include file="classpath:db/changelog/i18n/db.changelog-master.xml"/>
 ```
 
-Point the consumer Liquibase `change-log` at **its** master (the file that contains this `include`).
-
 ### ChangeSet `0001`
 
 - Creates `i18n` **only if the table does not exist**.
 - If the table exists → `MARK_RAN` (no create, **no drop**).
-- Old/incompatible schema: drop or migrate **manually** (or with a consumer-owned changeSet), then align data.
+- Old/incompatible schema: drop or migrate **manually** (consumer-owned changeSet), then align data.
 
 ## Consumer configuration
 
@@ -132,8 +130,50 @@ application.modules.common.i18n.message-source.enabled: true
 application.modules.common.i18n.api.enabled: true
 ```
 
-Admin create/get/update/delete + resolve by `namespace` + `code` + ordered `locales`.  
-Requires `I18nService` bean + `api.enabled=true`.
+Admin create/get/update/delete + resolve by `namespace` + `code` + ordered `locales` (`List<String>` query params → `translate(..., List<?>)`).
+
+## `I18nService` API
+
+### Translate
+
+| Method | Behaviour |
+|--------|-----------|
+| `translate(namespace, code, List<?> locales)` | Preferred list API. Elements: `String`, `Locale`, or `CharSequence`. Accepts `List<String>` / `List<Locale>` directly. Normalize + distinct (first wins) → one SQL, first match. |
+| `translate(namespace, code, String locale)` | Preference: that locale, then `default-locale` from config. |
+| `translate(namespace, code, Locale locale)` | Preference chain via `I18nLocaleUtil.preferenceList` (tag → language → default). |
+| `translate(code, String locale)` | Same as above with namespace `default`. |
+| `translate(code, Locale locale)` | Same as above with namespace `default`. |
+
+```java
+// List<String> — works with List<?>
+I18n row = i18nService.translate("default", "greeting.welcome", List.of("ro-ro", "ro", "en"));
+
+// single locale
+I18n row2 = i18nService.translate("default", "greeting.welcome", "ro-RO");
+I18n row3 = i18nService.translate("default", "greeting.welcome", Locale.forLanguageTag("ro-RO"));
+```
+
+- Miss → synthetic row: `id = 0`, `content = code` (**not** cached). Callers that need “no translation” must check `id == 0` (or equivalent), not only null.
+- Empty preference list after normalize → uses config `default-locale` if set.
+
+### Exact / CRUD
+
+| Method | Notes |
+|--------|--------|
+| `findByNamespaceAndCodeAndLocale(..., String\|Locale)` | Exact match (normalized locale); may return null |
+| `deleteByNamespaceAndCodeAndLocale(..., String\|Locale)` | Evicts cache |
+| `getOne(id)` | Or `I18nNotFoundException` |
+| `save` / `deleteById` / `clearCache` | Evict all `i18n-cache` |
+
+## Locale utilities (`I18nLocaleUtil`)
+
+| Method | Role |
+|--------|------|
+| `normalize(String\|Locale)` | Canonical lowercase, `_` → `-` |
+| `normalizeOrdered(List<String>)` | Normalize, drop blank, **distinct preserving first occurrence** |
+| `normalizeOrderedLocales(List<Locale>)` | Same for `Locale` |
+| `normalizeOrderedObjects(List<?>)` | Same for mixed `String` / `Locale` / `CharSequence`; unsupported type → `IllegalArgumentException` |
+| `preferenceList(Locale, defaultLocale)` | tag → language → default |
 
 ## Cache
 
@@ -141,11 +181,10 @@ Library contract = cache name `i18n-cache` only. Consumer provides `CacheManager
 
 | | |
 |--|--|
-| Cached | `translate(namespace, code, List<String> locales)` |
-| Not cached | Miss synthetic row (`id == 0`, `content = code`) |
+| Cached | `I18nServiceImpl.translateForStringLocales` (**impl-only**, not on `I18nService`) |
+| Public path | All public `translate` overloads → normalize → cached method via `@Lazy I18nServiceImpl` self |
+| Not cached | Miss (`id == 0`) |
 | Evict all | `save`, deletes, `clearCache` |
-
-Overloads (`Locale` / single locale string) delegate through a Spring proxy (`@Lazy` self) so caching still applies.
 
 ### In-memory example (Caffeine)
 
@@ -163,24 +202,6 @@ spring:
       spec: maximumSize=10000,expireAfterAccess=6h,expireAfterWrite=24h
 ```
 
-Any other Spring `CacheManager` is fine if it exposes `i18n-cache`.
-
-## Runtime translate
-
-```java
-I18n row = i18nService.translate(
-        "default",
-        "greeting.welcome",
-        List.of("ro-ro", "ro", "en")
-);
-String text = row.getContent(); // plain text from DB
-```
-
-- One SQL: `namespace` + `code` + `locale IN (...)` ordered by list position.
-- Locale normalize via `I18nLocaleUtil`.
-- Miss → `id = 0`, `content = code`.
-- By id: `getOne` → `findById` or `I18nNotFoundException` (HTTP 404 when API is on).
-
 ## Storage format (one format for both APIs)
 
 **DB `content` = plain display text** (what the user should see), plus intentional placeholders like `{0}` when needed.
@@ -192,7 +213,7 @@ String text = row.getContent(); // plain text from DB
 
 Do **not** store `don''t` / `'{'` in the DB for normal rows.
 
-Nested MessageFormat arguments (e.g. `choice` containing `{1}`) use **`I18nBraceMatcher`** (brace depth) so the pattern is not cut at the first `}`.
+Nested MessageFormat arguments (e.g. `choice` containing `{1}`) use **`I18nBraceMatcher`** (brace depth).
 
 ### Examples
 
@@ -205,14 +226,15 @@ Nested MessageFormat arguments (e.g. `choice` containing `{1}`) use **`I18nBrace
 
 ### Placeholders
 
-- Real args: `{0}`, `{1}`, `{0,number}`, `{0,choice,...}` (nested braces supported via depth matching).
+- Real args: `{0}`, `{1}`, `{0,number}`, `{0,choice,...}` (nested braces via depth matching).
 - Accidental `{ABC}`: store plain; adapter treats as literals.
-- Legacy rows stored as MessageFormat patterns (`don''t`): unescape to plain before dual-path use.
+- Legacy MessageFormat-escaped rows (`don''t`): unescape to plain before dual-path use.
 
 ## Tests
 
 Unit tests (no database):
 
+- `I18nLocaleUtilTest` — `normalizeOrderedObjects` (null/empty, distinct order, mixed `Locale`/`String`/`CharSequence`, unsupported type)
 - `I18nMessageFormatUtilTest` — apostrophe, `{0}`, `{TEST}`, combined, nested `choice`
 - `I18nBraceMatcherTest` — matching / balance / depth
 
