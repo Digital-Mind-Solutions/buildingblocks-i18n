@@ -49,8 +49,31 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
-tasks.named('test') {
+def testHtmlReport = layout.buildDirectory.file('reports/tests/test/index.html')
+def testXmlReportDir = layout.buildDirectory.dir('test-results/test')
+
+tasks.register('printTestReportLocation') {
+    description = 'Prints clickable file:// links to test reports (IDEA console).'
+    // Always run after test (success or failure).
+    outputs.upToDateWhen { false }
+    doLast {
+        def html = testHtmlReport.get().asFile
+        def xmlDir = testXmlReportDir.get().asFile
+        logger.lifecycle('')
+        logger.lifecycle('>>> Test reports (click to open in IDEA):')
+        if (html.exists()) {
+            logger.lifecycle("    HTML: file://${html.absolutePath}")
+        } else {
+            logger.lifecycle("    HTML: (not generated) ${html.absolutePath}")
+        }
+        logger.lifecycle("    XML:  file://${xmlDir.absolutePath}")
+        logger.lifecycle('')
+    }
+}
+
+tasks.named('test', Test) {
     useJUnitPlatform()
+    finalizedBy(tasks.named('printTestReportLocation'))
 }
 
 publishing {

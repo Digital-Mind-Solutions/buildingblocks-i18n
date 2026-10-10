@@ -19,18 +19,4 @@ public interface I18nService {
 
     void clearCache();
 
-    I18n getById(Long id);
-
-    I18n findByNamespaceAndCodeAndLocale(String namespace, String code, String locale);
-
-    I18n findByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale);
-
-    long deleteByNamespaceAndCodeAndLocale(String namespace, String code, String locale);
-
-    long deleteByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale);
-
-    void deleteById(Long id);
-
-    I18n save(I18n i18n);
-
 }

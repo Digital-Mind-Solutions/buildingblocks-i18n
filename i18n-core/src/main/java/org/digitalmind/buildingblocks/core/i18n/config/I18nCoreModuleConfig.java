@@ -24,6 +24,8 @@ public class I18nCoreModuleConfig {
     public static final String API_ENABLED = PREFIX + ".api.enabled";
     public static final String MESSAGE_SOURCE_ENABLED = PREFIX + ".message-source.enabled";
     public static final String MESSAGE_SOURCE_BEAN = "i18nMessageSource";
+    /** {@link I18nStoreImplementation}: {@code DB} (default) or {@code FS}. */
+    public static final String STORE_IMPLEMENTATION = PREFIX + ".implementation";
 
     public static final String ROOT_PACKAGE = "org.digitalmind.buildingblocks.core." + MODULE;
     public static final String CONFIG_PACKAGE = ROOT_PACKAGE + ".config";

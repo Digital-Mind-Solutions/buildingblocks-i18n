@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.digitalmind.buildingblocks.core.i18n.config.I18nCoreModuleConfig;
 import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
 import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
+import org.digitalmind.buildingblocks.core.i18n.service.I18nStoreService;
+import org.digitalmind.buildingblocks.core.i18n.util.I18nLocaleUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -22,6 +24,8 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.net.URI;
 import java.util.List;
 
+import static org.digitalmind.buildingblocks.core.i18n.entity.I18n.DEFAULT_NAMESPACE;
+
 @Slf4j
 @RestController
 @ConditionalOnBean(I18nService.class)
@@ -30,10 +34,12 @@ import java.util.List;
 @Tag(name = "I18n", description = "This resource is exposing the services for internationalization support")
 public class I18nController {
     private final I18nService i18nService;
+    private final I18nStoreService i18nStoreService;
 
     @Autowired
-    public I18nController(I18nService i18nService) {
+    public I18nController(I18nService i18nService, I18nStoreService i18nStoreService) {
         this.i18nService = i18nService;
+        this.i18nStoreService = i18nStoreService;
     }
 
     //CREATE I18n
@@ -50,7 +56,8 @@ public class I18nController {
     public ResponseEntity<I18n> createI18n(
             @Parameter(description = "The translation", required = true) @Valid @RequestBody I18n i18n) {
 
-        I18n result = i18nService.save(i18n);
+        I18n result = i18nStoreService.save(prepareForSave(i18n));
+        i18nService.clearCache();
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(result.getId()).toUri();
         return ResponseEntity.created(uri).body(result);
@@ -67,8 +74,7 @@ public class I18nController {
     public ResponseEntity<I18n> retrieveI18n(
             @Parameter(description = "The identifier used to identify a I18n.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
     ) {
-        I18n i18n = i18nService.getById(identifier);
-        return ResponseEntity.ok(i18n);
+        return ResponseEntity.ok(i18nStoreService.getById(identifier));
     }
 
     //RESOLVE I18n (ordered locale preference)
@@ -100,12 +106,13 @@ public class I18nController {
             @Parameter(description = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier,
             @Parameter(description = "The translation details", required = true) @Valid @RequestBody I18n i18n
     ) {
-        I18n result = i18nService.getById(identifier);
+        I18n result = i18nStoreService.getById(identifier);
         result.setNamespace(i18n.getNamespace());
         result.setLocale(i18n.getLocale());
         result.setContent(i18n.getContent());
         result.setCode(i18n.getCode());
-        i18nService.save(result);
+        i18nStoreService.save(prepareForSave(result));
+        i18nService.clearCache();
         return ResponseEntity.ok().build();
     }
 
@@ -121,9 +128,20 @@ public class I18nController {
     public ResponseEntity<Void> deleteI18n(
             @Parameter(description = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
     ) {
-        I18n i18n = i18nService.getById(identifier);
-        i18nService.deleteById(identifier);
+        i18nStoreService.getById(identifier);
+        i18nStoreService.deleteById(identifier);
+        i18nService.clearCache();
         return ResponseEntity.ok().build();
+    }
+
+    private static I18n prepareForSave(I18n i18n) {
+        if (i18n.getLocale() != null) {
+            i18n.setLocale(I18nLocaleUtil.normalize(i18n.getLocale()));
+        }
+        if (i18n.getNamespace() == null || i18n.getNamespace().isBlank()) {
+            i18n.setNamespace(DEFAULT_NAMESPACE);
+        }
+        return i18n;
     }
 
 }

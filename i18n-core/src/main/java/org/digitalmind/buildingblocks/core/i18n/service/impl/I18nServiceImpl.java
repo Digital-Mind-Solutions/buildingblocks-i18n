@@ -3,9 +3,8 @@ package org.digitalmind.buildingblocks.core.i18n.service.impl;
 import lombok.extern.slf4j.Slf4j;
 import org.digitalmind.buildingblocks.core.i18n.config.I18nConfig;
 import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
-import org.digitalmind.buildingblocks.core.i18n.exception.I18nNotFoundException;
-import org.digitalmind.buildingblocks.core.i18n.repository.I18nRepository;
 import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
+import org.digitalmind.buildingblocks.core.i18n.service.I18nStoreService;
 import org.digitalmind.buildingblocks.core.i18n.util.I18nLocaleUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -29,7 +28,7 @@ import static org.digitalmind.buildingblocks.core.i18n.entity.I18n.DEFAULT_NAMES
 public class I18nServiceImpl implements I18nService {
 
     private final I18nConfig i18nConfig;
-    private final I18nRepository i18nRepository;
+    private final I18nStoreService i18nStoreService;
     /**
      * Concrete proxy so {@link #translateForStringLocales} stays off the interface but still hits cache.
      */
@@ -38,66 +37,12 @@ public class I18nServiceImpl implements I18nService {
     @Autowired
     public I18nServiceImpl(
             I18nConfig i18nConfig,
-            I18nRepository i18nRepository,
+            I18nStoreService i18nStoreService,
             @Lazy I18nServiceImpl self
     ) {
         this.i18nConfig = i18nConfig;
-        this.i18nRepository = i18nRepository;
+        this.i18nStoreService = i18nStoreService;
         this.self = self;
-    }
-
-    @Override
-    public I18n getById(Long id) {
-        return i18nRepository.findById(id)
-                .orElseThrow(() -> new I18nNotFoundException("I18n not found for id=" + id));
-    }
-
-    @Override
-    public I18n findByNamespaceAndCodeAndLocale(String namespace, String code, String locale) {
-        return i18nRepository.findByNamespaceAndCodeAndLocale(
-                namespace, code, I18nLocaleUtil.normalize(locale)
-        );
-    }
-
-    @Override
-    public I18n findByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale) {
-        return findByNamespaceAndCodeAndLocale(
-                namespace, code, I18nLocaleUtil.normalize(locale)
-        );
-    }
-
-    @Override
-    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
-    public void deleteById(Long id) {
-        i18nRepository.deleteById(id);
-    }
-
-    @Override
-    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
-    public long deleteByNamespaceAndCodeAndLocale(String namespace, String code, String locale) {
-        return i18nRepository.deleteByNamespaceAndCodeAndLocale(
-                namespace, code, I18nLocaleUtil.normalize(locale)
-        );
-    }
-
-    @Override
-    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
-    public long deleteByNamespaceAndCodeAndLocale(String namespace, String code, Locale locale) {
-        return deleteByNamespaceAndCodeAndLocale(
-                namespace, code, I18nLocaleUtil.normalize(locale)
-        );
-    }
-
-    @Override
-    @CacheEvict(cacheNames = CACHE_NAME, allEntries = true)
-    public I18n save(I18n i18n) {
-        if (i18n.getLocale() != null) {
-            i18n.setLocale(I18nLocaleUtil.normalize(i18n.getLocale()));
-        }
-        if (i18n.getNamespace() == null || i18n.getNamespace().isBlank()) {
-            i18n.setNamespace(DEFAULT_NAMESPACE);
-        }
-        return i18nRepository.save(i18n);
     }
 
     private I18n missingTranslation(String namespace, String code, List<String> locales) {
@@ -122,7 +67,7 @@ public class I18nServiceImpl implements I18nService {
             String fallback = I18nLocaleUtil.normalize(i18nConfig.getDefaultLocale());
             orderedLocales = fallback == null ? List.of() : List.of(fallback);
         }
-        I18n i18n = i18nRepository.findFirstByNamespaceAndCodeAndLocales(
+        I18n i18n = i18nStoreService.findFirstByNamespaceAndCodeAndLocales(
                 resolvedNamespace, code, orderedLocales
         );
         if (i18n == null) {
