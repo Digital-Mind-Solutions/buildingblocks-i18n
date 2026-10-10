@@ -9,7 +9,7 @@ Library for **DB-backed internationalization**: store `(namespace, code, locale)
 | Branch | `spring-4.1.0` |
 | Version | `4.1.0` |
 | Stack | Spring Boot **4.0.3** (library plugins) |
-| Licence | **DMSAL v1.0** — [`dmsal-license` `@v1.0`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md); no `LICENSE.md` in-repo; `includeBuild('../dmsal-license')` → `META-INF/LICENSE.md` in the JAR |
+| Licence | **DMSAL** — `dmsal_license_version` in [`../gradle.properties`](../gradle.properties); Git tag `v{ver}` + `v{ver}/LICENSE.md`; plugin `org.digitalmind.dmsal-license:{ver}` → `META-INF/LICENSE.md` |
 | Doc | [`releases/README-4.1.0.md`](README-4.1.0.md) |
 | Prior line | [`README-4.0.0.md`](README-4.0.0.md) — `(code, locale)` / esign-evo (different contract) |
 
@@ -184,7 +184,7 @@ I18n row3 = i18nService.translate("default", "greeting.welcome", Locale.forLangu
 |--------|--------|
 | `findByNamespaceAndCodeAndLocale(..., String\|Locale)` | Exact match (normalized locale); may return null |
 | `deleteByNamespaceAndCodeAndLocale(..., String\|Locale)` | Evicts cache |
-| `getOne(id)` | Or `I18nNotFoundException` |
+| `getById(id)` | Or `I18nNotFoundException` |
 | `save` / `deleteById` / `clearCache` | Evict all `i18n-cache` |
 
 ## Locale utilities (`I18nLocaleUtil`)

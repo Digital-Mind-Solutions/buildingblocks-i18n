@@ -8,16 +8,22 @@ DB-backed internationalization: `(namespace, code, locale) → content`, ordered
 | Module | `i18n-core` |
 | Current line | **4.1.0** (`spring-4.1.0`) |
 | Full contracts | [`releases/`](releases/) |
-| Licence | **DMSAL v1.0** (source-available; inspection only unless Articles 5, 6, or 9) — [`dmsal-license` `@v1.0`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md) |
+| Licence | **DMSAL** (`dmsal_license_version` in [`gradle.properties`](gradle.properties)) — [canonical `@v1.0`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md) |
 
 Consumer owns Liquibase execution and the `CacheManager`. Agent notes: [`ai/README.md`](ai/README.md).
 
 ## Licence
 
-Licensed under the **Digital Mind Source-Available License (DMSAL) v1.0**. Public Source Code is for inspection only; Use requires Articles 5, 6, or 9 of the licence.
+Licensed under the **Digital Mind Source-Available License (DMSAL)**. Public Source Code is for inspection only; Use requires Articles 5, 6, or 9 of the licence.
 
-Full text (canonical): [`Digital-Mind-Solutions/dmsal-license` — tag `v1.0`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md).  
-No `LICENSE.md` in this repo. `settings.gradle` uses **`includeBuild('../dmsal-license')`** — clone [`dmsal-license`](https://github.com/Digital-Mind-Solutions/dmsal-license) as a **sibling** or configuration fails. Dependency `org.digitalmind.license:dmsal-license:1.0` → task `fetchDmsalLicense` stages `i18n-core/build/dmsal/LICENSE.md` → `jar` packs `META-INF/LICENSE.md`.
+| | |
+|--|--|
+| Pin | [`gradle.properties`](gradle.properties) → **`dmsal_license_version=1.0`** |
+| Git tag + text | [`v1.0` / `v1.0/LICENSE.md`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md) — pattern `blob/v{ver}/v{ver}/LICENSE.md` |
+| Plugin | `org.digitalmind.dmsal-license` version **`${dmsal_license_version}`** (mavenLocal / Maven) |
+
+No `LICENSE.md` in this repo. Publish the matching plugin from [`dmsal-license`](https://github.com/Digital-Mind-Solutions/dmsal-license) (`./gradlew publishToMavenLocal`), then build this project.
+
 
 ## Overview
 
@@ -49,7 +55,7 @@ Table `i18n`: unique `(namespace, code, locale)`; locale canonical lowercase `_`
 | `translate(code, String\|Locale locale)` | Namespace `default` |
 | `findByNamespaceAndCodeAndLocale(..., String\|Locale)` | Exact match; may be null |
 | `deleteByNamespaceAndCodeAndLocale(..., String\|Locale)` | Evicts cache |
-| `getOne(id)` / `save` / `deleteById` / `clearCache` | CRUD + cache eviction |
+| `getById(id)` / `save` / `deleteById` / `clearCache` | CRUD + cache eviction |
 
 Related: `I18nLocaleUtil` (normalize / ordered / preference), `I18nMessageFormatUtil` + `I18nBraceMatcher` (MessageSource path), Liquibase `classpath:db/changelog/i18n/db.changelog-master.xml`.
 

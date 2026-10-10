@@ -29,7 +29,7 @@
 - Exact: `findByNamespaceAndCodeAndLocale` / `deleteByNamespaceAndCodeAndLocale` with `String` or `Locale`.
 - Miss: synthetic `id == 0`, `content == code` — **not** cached. Callers check miss via `id`, not only null.
 - Cache name: `i18n-cache` (consumer must define it). Writes / `clearCache` evict all.
-- `getOne(id)` → `findById` or `I18nNotFoundException`.
+- `getById(id)` → `findById` or `I18nNotFoundException`.
 
 ## Repository
 

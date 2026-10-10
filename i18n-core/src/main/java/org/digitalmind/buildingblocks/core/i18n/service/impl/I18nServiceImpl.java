@@ -47,7 +47,7 @@ public class I18nServiceImpl implements I18nService {
     }
 
     @Override
-    public I18n getOne(Long id) {
+    public I18n getById(Long id) {
         return i18nRepository.findById(id)
                 .orElseThrow(() -> new I18nNotFoundException("I18n not found for id=" + id));
     }

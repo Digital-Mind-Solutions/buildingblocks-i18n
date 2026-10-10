@@ -3,6 +3,8 @@ plugins {
     id 'org.springframework.boot' version '4.0.3'
     id 'io.spring.dependency-management' version '1.1.7'
     id 'maven-publish'
+    // version = gradle.properties dmsal_license_version (same as Git dmsal-license tag / v*/ folder)
+    id 'org.digitalmind.dmsal-license' version "${dmsal_license_version}"
 }
 
 ext {
@@ -21,53 +23,17 @@ bootJar {
     enabled = false
 }
 
-configurations {
-    dmsalLicense
-}
-
-// Isolated: resolve composite/Maven dmsal-license → stage under build/ → jar reads only the staged file.
-def dmsalLicenseStaged = layout.buildDirectory.file('dmsal/LICENSE.md')
-
-tasks.register('fetchDmsalLicense') {
-    group = 'build'
-    description = 'Stage META-INF/LICENSE.md from org.digitalmind.license:dmsal-license into build/dmsal/'
-    dependsOn configurations.dmsalLicense
-    inputs.files(configurations.dmsalLicense)
-    outputs.file(dmsalLicenseStaged)
-    doLast {
-        def artifact = configurations.dmsalLicense.singleFile
-        def matches = zipTree(artifact).matching { include 'META-INF/LICENSE.md' }.files
-        if (matches.isEmpty()) {
-            throw new GradleException(
-                    "No META-INF/LICENSE.md inside ${artifact.name}. " +
-                    "Clone ../dmsal-license (includeBuild) or resolve org.digitalmind.license:dmsal-license:1.0."
-            )
-        }
-        def dest = dmsalLicenseStaged.get().asFile
-        dest.parentFile.mkdirs()
-        dest.bytes = matches.first().bytes
-        if (dest.length() == 0L) {
-            throw new GradleException("Staged DMSAL LICENSE.md is empty (from ${artifact.absolutePath})")
-        }
-        logger.lifecycle("Staged DMSAL licence from ${artifact.name} -> ${dest.absolutePath}")
-    }
+dmsalLicense {
+    packageIntoJar = true
 }
 
 jar {
     archiveBaseName = "i18n-core"
     enabled = true
-    dependsOn tasks.named('fetchDmsalLicense')
-    metaInf {
-        from(dmsalLicenseStaged) {
-            rename { 'LICENSE.md' }
-        }
-    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 dependencies {
-    // Composite: settings includeBuild('../dmsal-license') substitutes this module from the sibling clone.
-    dmsalLicense 'org.digitalmind.license:dmsal-license:1.0'
-
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.boot:spring-boot-starter-web"
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
