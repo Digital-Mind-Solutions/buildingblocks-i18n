@@ -9,7 +9,7 @@ Library for **DB-backed internationalization**: store `(namespace, code, locale)
 | Branch | `spring-4.1.0` |
 | Version | `4.1.0` |
 | Stack | Spring Boot **4.0.3** (library plugins) |
-| Licence | **DMSAL v1.0** — [`LICENSE`](../LICENSE.md) |
+| Licence | **DMSAL v1.0** — [`dmsal-license` `@v1.0`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md); no `LICENSE.md` in-repo; `includeBuild('../dmsal-license')` → `META-INF/LICENSE.md` in the JAR |
 | Doc | [`releases/README-4.1.0.md`](README-4.1.0.md) |
 | Prior line | [`README-4.0.0.md`](README-4.0.0.md) — `(code, locale)` / esign-evo (different contract) |
 

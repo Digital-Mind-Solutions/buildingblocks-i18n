@@ -1,3 +1,6 @@
 rootProject.name = 'buildingblocks-i18n'
 
 include 'i18n-core'
+
+// Requires sibling clone: ../dmsal-license (Digital-Mind-Solutions/dmsal-license). Absent → configuration fails.
+includeBuild('../dmsal-license')

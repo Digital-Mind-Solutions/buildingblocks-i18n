@@ -8,7 +8,7 @@ DB-backed internationalization: `(namespace, code, locale) → content`, ordered
 | Module | `i18n-core` |
 | Current line | **4.1.0** (`spring-4.1.0`) |
 | Full contracts | [`releases/`](releases/) |
-| Licence | **DMSAL v1.0** (source-available; inspection only unless Articles 5, 6, or 9) — [`LICENSE`](LICENSE.md) |
+| Licence | **DMSAL v1.0** (source-available; inspection only unless Articles 5, 6, or 9) — [`dmsal-license` `@v1.0`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md) |
 
 Consumer owns Liquibase execution and the `CacheManager`. Agent notes: [`ai/README.md`](ai/README.md).
 
@@ -16,7 +16,8 @@ Consumer owns Liquibase execution and the `CacheManager`. Agent notes: [`ai/READ
 
 Licensed under the **Digital Mind Source-Available License (DMSAL) v1.0**. Public Source Code is for inspection only; Use requires Articles 5, 6, or 9 of the licence.
 
-Full text: [`LICENSE`](LICENSE.md).
+Full text (canonical): [`Digital-Mind-Solutions/dmsal-license` — tag `v1.0`](https://github.com/Digital-Mind-Solutions/dmsal-license/blob/v1.0/v1.0/LICENSE.md).  
+No `LICENSE.md` in this repo. `settings.gradle` uses **`includeBuild('../dmsal-license')`** — clone [`dmsal-license`](https://github.com/Digital-Mind-Solutions/dmsal-license) as a **sibling** or configuration fails. Dependency `org.digitalmind.license:dmsal-license:1.0` → task `fetchDmsalLicense` stages `i18n-core/build/dmsal/LICENSE.md` → `jar` packs `META-INF/LICENSE.md`.
 
 ## Overview
 
