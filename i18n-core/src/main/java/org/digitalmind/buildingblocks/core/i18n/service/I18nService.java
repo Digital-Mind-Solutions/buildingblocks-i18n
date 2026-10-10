@@ -29,7 +29,7 @@ public interface I18nService {
 
     void clearCache();
 
-    I18n getOne(Long id);
+    I18n getById(Long id);
 
     I18n findByNamespaceAndCodeAndLocale(String namespace, String code, String locale);
 

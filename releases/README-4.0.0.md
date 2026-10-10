@@ -9,6 +9,7 @@ Library for **DB-backed internationalization**: store `(code, locale) → conten
 | Branch | `spring-4.0.0` |
 | Version | `4.0.0` (Gradle root `version`) |
 | Tip | `esign-evo` (`f16268c`) — Spring Boot **4.0.3**, Java **25** |
+| Licence | **DMSAL** — `dmsal_license_version` in [`../gradle.properties`](../gradle.properties); Git tag `v{ver}` + `v{ver}/LICENSE.md`; plugin `org.digitalmind.dmsal-license:{ver}` → `META-INF/LICENSE.md` |
 | Doc | [`releases/README-4.0.0.md`](README-4.0.0.md) |
 
 This document is the **full contract** for version **4.0.0** as shipped on this branch. Overview / index: [`../README.md`](../README.md).

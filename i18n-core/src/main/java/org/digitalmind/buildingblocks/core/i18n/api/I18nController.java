@@ -67,7 +67,7 @@ public class I18nController {
     public ResponseEntity<I18n> retrieveI18n(
             @Parameter(description = "The identifier used to identify a I18n.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
     ) {
-        I18n i18n = i18nService.getOne(identifier);
+        I18n i18n = i18nService.getById(identifier);
         return ResponseEntity.ok(i18n);
     }
 
@@ -102,7 +102,7 @@ public class I18nController {
             @Parameter(description = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier,
             @Parameter(description = "The translation details", required = true) @Valid @RequestBody I18n i18n
     ) {
-        I18n result = i18nService.getOne(identifier);
+        I18n result = i18nService.getById(identifier);
         result.setLocale(i18n.getLocale());
         result.setContent(i18n.getContent());
         result.setCode(i18n.getCode());
@@ -122,7 +122,7 @@ public class I18nController {
     public ResponseEntity<Void> deleteI18n(
             @Parameter(description = "The identifier used to identify a translation.", required = true) @PathVariable(value = "identifier", required = true) Long identifier
     ) {
-        I18n i18n = i18nService.getOne(identifier);
+        I18n i18n = i18nService.getById(identifier);
         i18nService.deleteById(identifier);
         return ResponseEntity.ok().build();
     }

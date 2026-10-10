@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.digitalmind.buildingblocks.core.i18n.config.I18nConfig;
 import org.digitalmind.buildingblocks.core.i18n.dto.I18nSearchOperator;
 import org.digitalmind.buildingblocks.core.i18n.entity.I18n;
+import org.digitalmind.buildingblocks.core.i18n.exception.I18nNotFoundException;
 import org.digitalmind.buildingblocks.core.i18n.repository.I18nRepository;
 import org.digitalmind.buildingblocks.core.i18n.service.I18nService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,8 +83,9 @@ public class I18nServiceImpl implements I18nService {
     }
 
     @Override
-    public I18n getOne(Long id) {
-        return i18nRepository.getOne(id);
+    public I18n getById(Long id) {
+        return i18nRepository.findById(id)
+                .orElseThrow(() -> new I18nNotFoundException("I18n not found for id=" + id));
     }
 
     @Override
