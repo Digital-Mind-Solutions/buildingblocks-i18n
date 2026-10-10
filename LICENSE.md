@@ -433,7 +433,7 @@ EXCEPT FOR ARTICLES 3.8, 3.9, 6.4, AND 9.4, AND EXCEPT FOR ANY EXPRESS WRITTEN C
 
 14.2 Either Full Owner may enforce against infringement outside authorised grants. Non-enforcement against one infringer is not a waiver.
 
-14.3 Public repositories should include this Licence as `LICENSE.md` (or a clear pointer) and NOTICE per Schedule B.
+14.3 Public repositories should include this Licence as `LICENSE` (or a clear pointer) and NOTICE per Schedule B.
 
 ---
 

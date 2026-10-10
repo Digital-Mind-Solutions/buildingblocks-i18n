@@ -8,7 +8,7 @@ DB-backed internationalization: `(code, locale) → content`, optional Spring `M
 | Module | `i18n-core` |
 | Current line | **4.0.0** (`spring-4.0.0`, tip `esign-evo`) |
 | Full contracts | [`releases/`](releases/) |
-| Licence | **DMSAL v1.0** (source-available; inspection only unless Articles 5, 6, or 9) — [`LICENSE.md`](LICENSE.md) |
+| Licence | **DMSAL v1.0** (source-available; inspection only unless Articles 5, 6, or 9) — [`LICENSE`](LICENSE.md) |
 
 Consumer owns schema/migrations and the `CacheManager`.
 
@@ -16,7 +16,7 @@ Consumer owns schema/migrations and the `CacheManager`.
 
 Licensed under the **Digital Mind Source-Available License (DMSAL) v1.0**. Public Source Code is for inspection only; Use requires Articles 5, 6, or 9 of the licence.
 
-Full text: [`LICENSE.md`](LICENSE.md).
+Full text: [`LICENSE`](LICENSE.md).
 
 ## Overview
 
